@@ -73,26 +73,38 @@ provider "aws" {
   region = "sa-east-1"
 }
 
+variable "arquivos" {
+  default     = {
+    ec2-clayton-web1 = "subnet-00c59894f53620c61",
+    ec2-clayton-web2 = "subnet-07452ce46b3d0085b",
+    ec2-clayton-web3 = "subnet-014a2a279b209edcb"
+  }
+}
+
 resource "aws_instance" "web2" {
-  subnet_id = "subnet-02d7741675f030d69"
-  ami = "ami-083654bd07b5da81d"
-  instance_type = "t2.micro"
-  key_name = "teste" # a chave que vc tem na maquina pessoal
+  for_each = var.arquivos
+  #subnet_id = "subnet-00c59894f53620c61"
+  subnet_id = each.value
+  ami = "ami-0e66f5495b4efdd0f"
+  #count = length(keys(var.arquivos))
+  instance_type = "t3.micro"
+  key_name = "cert-turma3-clayton-dev" # a chave que vc tem na maquina pessoal
   associate_public_ip_address = true
-  vpc_security_group_ids = ["sg-083654bd07b5da81d"]
+  vpc_security_group_ids = ["sg-0c40cb54147ae844b"]
   root_block_device {
     encrypted = true
     volume_size = 8
   }
   tags = {
-    Name = "ec2-zerati-tf"
+  #  Name = "${var.arquivos[keys(var.arquivos)[count.index]]}"
+    Name = "${each.key}"
   }
 }
 
-resource "aws_key_pair" "chave_key" {
-  key_name   = "chave_key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABUAHUAHuaHaUhAUhAUAiqHA541BsJFngWPqlx27QdAZEWdMLvJv5Wguvatb6LIDo1V3rJ4mUtRRs0o2q3LwYiA5CIkiHFXyNVhXTF1WNAbRossUMsu/BzmgEKyIPPgPHeM0PyRi6FuW1TTZYdnO/GCzJ0UMvZFKnr2g6rELWgdc9Clxz8peNJ+iPJx/sJb+DxTuHDJc1U9eOYS7vlwzsHHApD9O+DbWnpwRpSEuX3vjm5pEEAPqrcBD3HK8kH2qMVRZNxg/fSzSrzjCwFV3ShNbKSTD6HYBV2xCY18mRFjyW94BPSBDGel7/kqTmXY4jtbAoyycWRZJFYhCdzNfItT69nHmsT3i09e0J9jNI6CaameQg/cwIOt8fl+lxUIAufHqFDJPGMJcNFoVR7t7yWPXN3qev2OlGnQONDVlNOmIJDrO+r2QeoVcKaxKye7G3HD3u4HuqGYfL9MtCo6pOZ8IZsCCj2KpS4KQCc="
-}
+# resource "aws_key_pair" "chave_key" {
+#  key_name   = "chave_key"
+#  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABUAHUAHuaHaUhAUhAUAiqHA541BsJFngWPqlx27QdAZEWdMLvJv5Wguvatb6LIDo1V3rJ4mUtRRs0o2q3LwYiA5CIkiHFXyNVhXTF1WNAbRossUMsu/BzmgEKyIPPgPHeM0PyRi6FuW1TTZYdnO/GCzJ0UMvZFKnr2g6rELWgdc9Clxz8peNJ+iPJx/sJb+DxTuHDJc1U9eOYS7vlwzsHHApD9O+DbWnpwRpSEuX3vjm5pEEAPqrcBD3HK8kH2qMVRZNxg/fSzSrzjCwFV3ShNbKSTD6HYBV2xCY18mRFjyW94BPSBDGel7/kqTmXY4jtbAoyycWRZJFYhCdzNfItT69nHmsT3i09e0J9jNI6CaameQg/cwIOt8fl+lxUIAufHqFDJPGMJcNFoVR7t7yWPXN3qev2OlGnQONDVlNOmIJDrO+r2QeoVcKaxKye7G3HD3u4HuqGYfL9MtCo6pOZ8IZsCCj2KpS4KQCc="
+#}
 
 
 # /////

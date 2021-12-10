@@ -1,13 +1,11 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-1" #criado na region virginia 
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc
-resource "aws_vpc" "main" {
-  cidr_block       = "10.0.0.0/16" # uma classe de IP
-  instance_tenancy = "default"  # - (Optional) A tenancy option for instances launched into the VPC. Default is default, which makes your instances shared on the host. Using either of the other options (dedicated or host) costs at least $2/hr.
 
-  tags = {
-    Name = "meu vpc do terraform"
-  }
-}
+
+#10.40.32.0/20 CDIR 
+#10.40.33.0/24 subnets zone 1a
+#10.40.34.0/24 subnets zone 1b
+#10.40.35.0/24 subnets zone 1c
+# id=vpc-01213731123b8cf8a
