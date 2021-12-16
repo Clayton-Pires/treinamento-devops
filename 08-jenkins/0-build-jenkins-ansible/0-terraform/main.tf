@@ -1,24 +1,45 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "sa-east-1"
 }
 
 data "http" "myip" {
   url = "http://ipv4.icanhazip.com" # outra opção "https://ifconfig.me"
 }
 
-resource "aws_instance" "jenkins" {
-  ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.large"
-  key_name      = "treinamento-turma1_itau"
-  tags = {
-    Name = "jenkins"
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # ou ["099720109477"] ID master com permissão para busca
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"] # exemplo de como listar um nome de AMI - 'aws ec2 describe-images --region us-east-1 --image-ids ami-09e67e426f25ce0d7' https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-images.html
   }
-  vpc_security_group_ids = ["${aws_security_group.jenkins.id}"]
+}
+
+
+resource "aws_instance" "jenkins" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t2.large"
+  key_name                    = "cert-turma3-clayton-dev"
+  associate_public_ip_address = true
+
+  subnet_id = "subnet-00c59894f53620c61"
+
+  root_block_device {
+    encrypted   = true
+    volume_size = 32
+  }
+
+  tags = {
+    Name = "jenkins_clayton"
+  }
+  vpc_security_group_ids = [aws_security_group.jenkins.id]
 }
 
 resource "aws_security_group" "jenkins" {
   name        = "acessos_jenkins"
   description = "acessos_jenkins inbound traffic"
+  vpc_id      = "vpc-0a957401e8ad3cade"
 
   ingress = [
     {
@@ -26,7 +47,7 @@ resource "aws_security_group" "jenkins" {
       from_port        = 22
       to_port          = 22
       protocol         = "tcp"
-      cidr_blocks      = ["${chomp(data.http.myip.body)}/32"]
+      cidr_blocks      = ["0.0.0.0/0"]
       ipv6_cidr_blocks = ["::/0"]
       prefix_list_ids  = null,
       security_groups : null,
@@ -37,7 +58,7 @@ resource "aws_security_group" "jenkins" {
       from_port        = 8080
       to_port          = 8080
       protocol         = "tcp"
-      cidr_blocks      = ["${chomp(data.http.myip.body)}/32"]
+      cidr_blocks      = ["0.0.0.0/0"]
       ipv6_cidr_blocks = ["::/0"]
       prefix_list_ids  = null,
       security_groups : null,
@@ -60,7 +81,7 @@ resource "aws_security_group" "jenkins" {
   ]
 
   tags = {
-    Name = "jenkins-lab"
+    Name = "jenkins-lab-clayton"
   }
 }
 
@@ -72,6 +93,6 @@ output "jenkins" {
     "private: ${aws_instance.jenkins.private_ip}",
     "public: ${aws_instance.jenkins.public_ip}",
     "public_dns: ${aws_instance.jenkins.public_dns}",
-    "ssh -i ~/Desktop/devops/treinamentoItau ubuntu@${aws_instance.jenkins.public_dns}"
+    "ssh -i ~/cert-turma3-clayton-dev.pem ubuntu@${aws_instance.jenkins.public_dns}"
   ]
 }
